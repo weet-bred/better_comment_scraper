@@ -1,1 +1,1 @@
-python_scraper/comment_scraper.py
+/home/pengels/projects/python_scraper/comment_scraper.py
