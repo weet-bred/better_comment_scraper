@@ -124,6 +124,34 @@ def write_output(comments, args):
         for item in comments:
             f.write("Line number " + str(item[0]) + ": " + item[1] + '\n')
 
+def get_links(content):
+    """
+    This function takes in a parameter (content) and returns a list of lists.
+    The parameter passed in must be the result of a requests.get that has been passed
+    to Beautiful Soup "html.parser" and then split on a newline.
+    This returns a list of links that can be grabbed and parsed.
+    """
+    links = []
+
+    for line in content:
+        # If you find a link, add the link to the list
+        if line.find('<a href=') != -1:
+            # Slice just the link out of the line
+            potential_link = (line[line.find('<a href=') + 9:line.find('</a>') -1])
+            potential_link = potential_link[:(potential_link.find('>'))]
+            potential_link = potential_link[:(potential_link.find('"'))]
+            # Discard relative links
+            if potential_link[0] != '#':
+                #print(potential_link + " is not a relative one!")
+                links.append(potential_link)
+
+    #for link in links:
+    #    print(link)
+
+    return links
+
+
+
 def main():
     """
     This script takes in an argument of a URL and then scrapes all comments out of that URL.
@@ -137,7 +165,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", "--url", help="The URL to parse. If no protocol is specified, defaults to https", required=True)
     parser.add_argument("-o", "--output", help="The plce to direct output to. If left blank, script will output to stdout. \nOther options:\n\tmysql - save to a database (not implemented), \n\tfilename - create or append to a file", required=False)
+    parser.add_argument("-n", "--number", help="The number of links to follow for crawling.", required=True)
     args = parser.parse_args()
+    url = args.url
 
 
     ###############
@@ -145,13 +175,19 @@ def main():
     ###############
 
     # Get the content of the webpage
-    content = get_content(args.url)
+    content = get_content(url)
 
     # Parse that content for comments
     comments = parse_comments(content)
 
     # Write the output
     write_output(comments, args)
+
+    # Get link to spider
+    links = get_links(content)
+
+    #print(links)
+
 
 if __name__ == "__main__":
     main()
