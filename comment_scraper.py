@@ -56,7 +56,11 @@ def parse_comments(content):
     return comments
 
 def get_content(url):
-
+    """
+    This function makes an HTTP GET request for the url specified.
+    The parameter returned is the result of a requests.get that has been passed 
+    to Beautiful Soup "html.parser" and then split on a newline.
+    """
     # Get the webpage with a GET request
     try:
         response = requests.get(url, timeout=5)
@@ -75,16 +79,35 @@ def get_content(url):
     
     # Make it a list of strings that are split on the newline
     content = str(content).split('\n')
+
     return content
 
 def write_output(comments, args):
+    """
+    This function takes two arguments - the comments list created by the parse_comments function 
+    above and the configparser parsed arguments object.
+    It either writes output to stdout
+    """
+    # Get the date for use in all the choices below
+    now = datetime.now()
+    now = now.strftime("%H:%M:%S")
+
     # If the output isn't specified, write to stdout
     if not args.output:
+        print("Comments from run on " + str(now))
         print("URL: " + args.url)
         for item in comments:
             print("Line number " + str(item[0]) + ": " + item[1])
+
     # If the output is specified and isn't mysql, write to a file
-    elif args.output != "mysql":
+    elif args.output == "mysql":
+        print("WARNING: MYSQL support not yet implemented - writing to STDOUT")
+        print("Comments from run on " + str(now))
+        print("URL: " + args.url)
+        for item in comments:
+            print("Line number " + str(item[0]) + ": " + item[1])
+
+    else:
         # If the file exists, append to it
         if os.path.exists(args.output):
             f = open(args.output, 'a')
@@ -92,8 +115,6 @@ def write_output(comments, args):
         else:
             f = open(args.output, 'w')
         # Write the comments to the file
-        now = datetime.now()
-        now = now.strftime("%H:%M:%S")
         f.write("\n\nComments from run on " + str(now) + '\n')
         f.write("URL: " + args.url + '\n\n')
         for item in comments:
