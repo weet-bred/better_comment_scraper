@@ -10,9 +10,10 @@ The hope is that this will potentially get some information that could be used i
 
 import argparse
 import os
+from datetime import datetime
+import sys
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
 
 
 # GOOD: --> and <!--
@@ -20,7 +21,7 @@ from datetime import datetime
 def parse_comments(content):
     """
     This function takes in a parameter (content) and returns a list of lists.
-    The parameter passed in must be the result of a requests.get that has been passed 
+    The parameter passed in must be the result of a requests.get that has been passed
     to Beautiful Soup "html.parser" and then split on a newline.
     The returned list of lists has an integer in the first element of the internal list
     that indicates the line number the comment was found on.
@@ -31,34 +32,37 @@ def parse_comments(content):
     continuing = False
 
     for line in enumerate(content):
-    
         # If we're continuing a multiline comment and the end of the comment isn't in this line
         if continuing and line[1].find('-->') == -1:
             # Append the string of this line to the string part of the last comment in the list
             comments[-1][1] += '\n' + str(line[1])
-    
+
         # If we're continuing a multiline comment and the end of the comment is in this line
         elif continuing and line[1].find('-->') != -1:
             # Append the string of this line to the string part of the last comment in the list
             continuing = False
-            # Get the slice before the end comment in case there's HTML after the comment on the same line
+            # Get the slice before the end comment in case there's HTML
+            # after the comment on the same line
             comments[-1][1] += '\n' + str(line[1][:(line[1].find('-->') + 3)])
-    
+
         # If it's a comment in a single line, add it to the list of comments
-        elif str(line[1]).find('<!--') != -1 and line[1].find('-->') != -1: # The comment start tag and the end tag
+        # The comment start tag and the end tag
+        elif str(line[1]).find('<!--') != -1 and line[1].find('-->') != -1:
             comments.append([line[0], line[1]])
-    
-        # If there's a comment beginning in a single line, add it to the list and set continue to true
-        elif line[1].find('<!--') != -1 and line[1].find('-->') == -1: # The comment start tag with no end (multiline comment)
+
+        # If there's a comment beginning in a single line, add it to the list
+        # and set continue to true
+        # The comment start tag with no end (multiline comment)
+        elif line[1].find('<!--') != -1 and line[1].find('-->') == -1:
             continuing = True
             comments.append([line[0], '\n' + str(line[1])])
-        
+
     return comments
 
 def get_content(url):
     """
     This function makes an HTTP GET request for the url specified.
-    The parameter returned is the result of a requests.get that has been passed 
+    The parameter returned is the result of a requests.get that has been passed
     to Beautiful Soup "html.parser" and then split on a newline.
     """
     # Get the webpage with a GET request
@@ -66,17 +70,17 @@ def get_content(url):
         response = requests.get(url, timeout=5)
     # Prepend https:// to the url if the user didn't provide one
     except requests.exceptions.MissingSchema:
-        response = requests.get("https://" + url, timeout = 5)
+        response = requests.get("https://" + url, timeout=5)
     except ConnectionRefusedError:
-        print("The script could not connect. Check your prefix (e.g. http://) and ensure it's correct")
-        exit(1)
+        print("The script could not connect. Ensure your prefix is correct (e.g. http://)")
+        sys.exit(1)
     except requests.exceptions.ConnectionError:
-        print("The script could not connect. Check your prefix (e.g. http://) and ensure it's correct")
-        exit(1)
-    
+        print("The script could not connect. Ensure your prefix is correct (e.g. http://)")
+        sys.exit(1)
+
     # Make it fancy looking with BeautifulSoup
     content = BeautifulSoup(response.content, "html.parser")
-    
+
     # Make it a list of strings that are split on the newline
     content = str(content).split('\n')
 
@@ -84,7 +88,7 @@ def get_content(url):
 
 def write_output(comments, args):
     """
-    This function takes two arguments - the comments list created by the parse_comments function 
+    This function takes two arguments - the comments list created by the parse_comments function
     above and the configparser parsed arguments object.
     It either writes output to stdout
     """
@@ -119,23 +123,27 @@ def write_output(comments, args):
         f.write("URL: " + args.url + '\n\n')
         for item in comments:
             f.write("Line number " + str(item[0]) + ": " + item[1] + '\n')
-    
+
 def main():
+    """
+    This script takes in an argument of a URL and then scrapes all comments out of that URL.
+    Pretty simple.
+    """
 
     ###############
     # Command line arguments
     ###############
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", "--url", help="The URL to parse. If no protocol is specified, defaults to https", required=True)
     parser.add_argument("-o", "--output", help="The plce to direct output to. If left blank, script will output to stdout. \nOther options:\n\tmysql - save to a database (not implemented), \n\tfilename - create or append to a file", required=False)
     args = parser.parse_args()
-    
-    
+
+
     ###############
     # Get the content
     ###############
-    
+
     # Get the content of the webpage
     content = get_content(args.url)
 
