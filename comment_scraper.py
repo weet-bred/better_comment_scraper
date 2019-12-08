@@ -9,8 +9,10 @@ The hope is that this will potentially get some information that could be used i
 ###############
 
 import argparse
+import os
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 
 # GOOD: --> and <!--
@@ -52,25 +54,9 @@ def parse_comments(content):
             comments.append([line[0], '\n' + str(line[1])])
         
     return comments
-    
-def main():
 
-    ###############
-    # Command line arguments
-    ###############
-    
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-u", "--url", help="The URL to parse. If no protocol is specified, defaults to https", required=True)
-    args = parser.parse_args()
-    
-    
-    ###############
-    # Get the content
-    ###############
-    
-    # Get the url from the arguments
-    url = args.url
-    
+def get_content(url):
+
     # Get the webpage with a GET request
     try:
         response = requests.get(url, timeout=5)
@@ -84,20 +70,59 @@ def main():
         print("The script could not connect. Check your prefix (e.g. http://) and ensure it's correct")
         exit(1)
     
-    # For some reason, this is just numbers, so ya know this boi is gonna use BeautifulSoup
-    #content = response.content
-    
     # Make it fancy looking with BeautifulSoup
     content = BeautifulSoup(response.content, "html.parser")
     
-    
     # Make it a list of strings that are split on the newline
     content = str(content).split('\n')
+    return content
 
+def write_output(comments, args):
+    # If the output isn't specified, write to stdout
+    if not args.output:
+        print("URL: " + args.url)
+        for item in comments:
+            print("Line number " + str(item[0]) + ": " + item[1])
+    # If the output is specified and isn't mysql, write to a file
+    elif args.output != "mysql":
+        # If the file exists, append to it
+        if os.path.exists(args.output):
+            f = open(args.output, 'a')
+        # If the file doesn't exist, make it new
+        else:
+            f = open(args.output, 'w')
+        # Write the comments to the file
+        now = datetime.now()
+        now = now.strftime("%H:%M:%S")
+        f.write("\n\nComments from run on " + str(now) + '\n')
+        f.write("URL: " + args.url + '\n\n')
+        for item in comments:
+            f.write("Line number " + str(item[0]) + ": " + item[1] + '\n')
+    
+def main():
+
+    ###############
+    # Command line arguments
+    ###############
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-u", "--url", help="The URL to parse. If no protocol is specified, defaults to https", required=True)
+    parser.add_argument("-o", "--output", help="The plce to direct output to. If left blank, script will output to stdout. \nOther options:\n\tmysql - save to a database (not implemented), \n\tfilename - create or append to a file", required=False)
+    args = parser.parse_args()
+    
+    
+    ###############
+    # Get the content
+    ###############
+    
+    # Get the content of the webpage
+    content = get_content(args.url)
+
+    # Parse that content for comments
     comments = parse_comments(content)
 
-    for item in comments:
-        print("Line number " + str(item[0]) + ": " + item[1])
+    # Write the output
+    write_output(comments, args)
 
 if __name__ == "__main__":
     main()
