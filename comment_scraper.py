@@ -33,13 +33,14 @@ def parse_comments(content):
         # If we're continuing a multiline comment and the end of the comment isn't in this line
         if continuing and line[1].find('-->') == -1:
             # Append the string of this line to the string part of the last comment in the list
-            comments[-1][1] += (line[1])
+            comments[-1][1] += '\n' + str(line[1])
     
         # If we're continuing a multiline comment and the end of the comment is in this line
         elif continuing and line[1].find('-->') != -1:
             # Append the string of this line to the string part of the last comment in the list
             continuing = False
-            comments[-1][1] += (line[1][:line[1].find('-->')])
+            # Get the slice before the end comment in case there's HTML after the comment on the same line
+            comments[-1][1] += '\n' + str(line[1][:(line[1].find('-->') + 3)])
     
         # If it's a comment in a single line, add it to the list of comments
         elif str(line[1]).find('<!--') != -1 and line[1].find('-->') != -1: # The comment start tag and the end tag
@@ -48,7 +49,7 @@ def parse_comments(content):
         # If there's a comment beginning in a single line, add it to the list and set continue to true
         elif line[1].find('<!--') != -1 and line[1].find('-->') == -1: # The comment start tag with no end (multiline comment)
             continuing = True
-            comments.append([line[0], line[1]])
+            comments.append([line[0], '\n' + str(line[1])])
         
     return comments
     
