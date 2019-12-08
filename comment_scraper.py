@@ -86,7 +86,7 @@ def get_content(url):
 
     return content
 
-def write_output(comments, args):
+def write_output(comments, args, url):
     """
     This function takes two arguments - the comments list created by the parse_comments function
     above and the configparser parsed arguments object.
@@ -99,7 +99,7 @@ def write_output(comments, args):
     # If the output isn't specified, write to stdout
     if not args.output:
         print("Comments from run on " + str(now))
-        print("URL: " + args.url)
+        print("URL: " + url)
         for item in comments:
             print("Line number " + str(item[0]) + ": " + item[1])
 
@@ -107,7 +107,7 @@ def write_output(comments, args):
     elif args.output == "mysql":
         print("WARNING: MYSQL support not yet implemented - writing to STDOUT")
         print("Comments from run on " + str(now))
-        print("URL: " + args.url)
+        print("URL: " + url)
         for item in comments:
             print("Line number " + str(item[0]) + ": " + item[1])
 
@@ -120,19 +120,17 @@ def write_output(comments, args):
             f = open(args.output, 'w')
         # Write the comments to the file
         f.write("\n\nComments from run on " + str(now) + '\n')
-        f.write("URL: " + args.url + '\n\n')
+        f.write("URL: " + url + '\n\n')
         for item in comments:
             f.write("Line number " + str(item[0]) + ": " + item[1] + '\n')
 
-def get_links(content):
+def get_links(content, url, links):
     """
     This function takes in a parameter (content) and returns a list of lists.
     The parameter passed in must be the result of a requests.get that has been passed
     to Beautiful Soup "html.parser" and then split on a newline.
     This returns a list of links that can be grabbed and parsed.
     """
-    links = []
-
     for line in content:
         # If you find a link, add the link to the list
         if line.find('<a href=') != -1:
@@ -140,13 +138,16 @@ def get_links(content):
             potential_link = (line[line.find('<a href=') + 9:line.find('</a>') -1])
             potential_link = potential_link[:(potential_link.find('>'))]
             potential_link = potential_link[:(potential_link.find('"'))]
-            # Discard relative links
-            if potential_link[0] != '#':
-                #print(potential_link + " is not a relative one!")
-                links.append(potential_link)
-
-    #for link in links:
-    #    print(link)
+            # Discard relative links and empty ones
+            if potential_link != '':
+                if str(potential_link[0]) != '#':
+                    # Only keep links on the same domain
+                    if potential_link.find(url.strip("http://").strip("https://")) != -1 or potential_link[0] == '/' and potential_link.find(url.strip("http://").strip("https://")) not in links:
+                        # If it's a redirect to just a relative location, make it absolute
+                        if potential_link[0] == '/':
+                            potential_link = url + potential_link
+                        # Add it to the list
+                        links.append(potential_link)
 
     return links
 
@@ -168,25 +169,34 @@ def main():
     parser.add_argument("-n", "--number", help="The number of links to follow for crawling.", required=True)
     args = parser.parse_args()
     url = args.url
+    iterations = 0
+    links = [url]
 
 
     ###############
     # Get the content
     ###############
 
-    # Get the content of the webpage
-    content = get_content(url)
+    while iterations < int(args.number) and iterations < len(links):
 
-    # Parse that content for comments
-    comments = parse_comments(content)
+        # Look at the current link
+        url = links[iterations]
 
-    # Write the output
-    write_output(comments, args)
+        # Get the content of the webpage
+        content = get_content(url)
 
-    # Get link to spider
-    links = get_links(content)
+        # Parse that content for comments
+        comments = parse_comments(content)
 
-    #print(links)
+        # Write the output
+        write_output(comments, args, url)
+
+        # Get link to spider
+        links = get_links(content, url, links)
+
+        #print(links)
+        # Increment the counter
+        iterations += 1
 
 
 if __name__ == "__main__":
