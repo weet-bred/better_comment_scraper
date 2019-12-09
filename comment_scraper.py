@@ -12,6 +12,7 @@ import argparse
 import os
 from datetime import datetime
 import sys
+import re
 import requests
 from bs4 import BeautifulSoup
 
@@ -95,7 +96,7 @@ def write_output(comments, args, url):
     import mysql.connector
     # Get the date for use in all the choices below
     now = datetime.now()
-    date = datetime.now()
+    date = datetime.now().date()
     now = now.strftime("%H:%M:%S")
 
     # If the output isn't specified, write to stdout
@@ -114,11 +115,16 @@ def write_output(comments, args, url):
         mycursor = mydb.cursor()
         mycursor.execute("SHOW TABLES;")
 
+        # Check if the url has an IP
+        ip = re.findall( r'[0-9]+(?:\.[0-9]+){3}', url )
+        if ip:
+            table_name = ip[0].replace('.','_')
         # Strip the URL appropriately to get the proper table name
-        stripped_url = args.url
-        stripped_url = stripped_url[stripped_url.find('/') +2:]
-        stripped_url = stripped_url.split('.')[0]
-        table_name = stripped_url
+        else:
+            stripped_url = args.url
+            stripped_url = stripped_url[stripped_url.find('/') +2:]
+            stripped_url = stripped_url.split('.')[0]
+            table_name = stripped_url
 
         # Check if that table actually exists
         found = False
@@ -128,11 +134,16 @@ def write_output(comments, args, url):
 
         # Create the table if necessary
         if not found:
-            mycursor.execute("CREATE TABLE {}(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, url TEXT NOT NULL, line_no INT NOT NULL, date_found DATE NOT NULL, comment TEXT NOT NULL);".format(table_name))
+            mycursor.execute("CREATE TABLE {} (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, url TEXT NOT NULL, line_no INT NOT NULL, date_found DATE NOT NULL, comment TEXT NOT NULL)".format(table_name))
 
         # INSERT THE DATA
         for line in comments:
-            mycursor.execute("INSERT INTO {} (url, line_no, date_found, comment) VALUES ({}, {}, {}, {});".format(table_name, url, line[0], date, line[1]))
+            #line[1] = line[1].replace('"', "'")
+            sql = "INSERT INTO {} (url, line_no, date_found, comment) VALUES (%s, %s, %s, %s);".format(table_name)
+            val = (str(url), str(line[0]), str("12-9-19"), str(line[1]))
+            mycursor.execute(sql, val)
+            print(mycursor.rowcount, "record inserted")
+            mydb.commit()
 
     # If the output is specified and isn't mysql, write to a file
     else:
