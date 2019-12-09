@@ -42,7 +42,7 @@
   <li>Python Setup</li>
   <ul>
     <li>Feel free to use a virtualenv</li>
-    <li><code>pip install requirements.txt</code></li>  
+    <li><code>pip install -r requirements.txt</code></li>  
   </ul>
   <li>Database Setup</li>
   <ul>
