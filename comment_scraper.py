@@ -214,6 +214,9 @@ def main():
     iterations = 0
     links = [url]
 
+    if not args.number:
+        args.number = 1
+
 
     ###############
     # Get the content
