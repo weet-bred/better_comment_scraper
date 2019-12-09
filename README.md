@@ -33,6 +33,25 @@
     <li>-p, --prompt_pass: Promt for the password to connect to the database with instead of providing on the command line</li>
   </ul>
 </ul>
-<h3>Examples:</h3>
+<h3>Example:</h3>
 <p>To store comments from a locally hosted web app to a locally hosted database with the username "username" and the database "comments":</p>
 <code>./comment_scraper.py -o mysql -n 10 -u http://127.0.0.1 -H "localhost" -U username p -D comments</code>
+<br>
+<h3>Setup:</h3>
+<ul>
+  <li>Python Setup</li>
+  <ul>
+    <li>Feel free to use a virtualenv</li>
+    <li><code>pip install requirements.txt</code></li>  
+  </ul>
+  <li>Database Setup</li>
+  <ul>
+    <li>Install a database server: <code>sudo apt install mariadb-server</code></li>
+    <li>Log in to the database: <code>sudo mysql</code></li>
+    <li>Create a database user: <code>CREATE USER username IDENTIFIED BY password;</code></li>
+    <li>Create a database to user: <code>CREATE DATABASE comments;</code></li>
+    <li>Give the user privileges: <code>GRANT ALL PRIVILEGES ON comments.* TO 'username'@'%';</li>
+    <li>Flush privileges: <code>FLUSH PRIVILEGES;</code></li>
+    
+  </ul>
+</ul>
