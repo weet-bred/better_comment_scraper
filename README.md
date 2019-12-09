@@ -9,7 +9,7 @@
 <li>Parse other webpages on the same site that are linked to the first page or subsequent pages</li>
 </ul>
 
-<h3>Basically, it's a cool comment parser with a few decent storage options and some really crummy spidering functionality.</h3>
+<h4>Basically, it's a cool comment parser with a few decent storage options and some really crummy spidering functionality.</h4>
 <p>The hope is that this tool could be used to find things that are hidden in webpages that should be removed. For example:</p>
 <ul>
   <li>Employee names</li>
@@ -31,5 +31,8 @@
     <li>-D, --mysql_db:   The database to connect to.</li>
     <li>-P, --mysql_pass: The password for the user to connect as.</li>
     <li>-p, --prompt_pass: Promt for the password to connect to the database with instead of providing on the command line</li>
+  </ul>
 </ul>
-</ul>
+<h3>Examples:</h3>
+<p>To store comments from a locally hosted web app to a locally hosted database with the username "username" and the database "comments":</p>
+<code>./comment_scraper.py -o mysql -n 10 -u http://127.0.0.1 -H "localhost" -U username p -D comments</code>
