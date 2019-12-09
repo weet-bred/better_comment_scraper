@@ -203,7 +203,7 @@ def main():
 
     parser.add_argument("-u", "--url", help="The URL to parse. If no protocol is specified, defaults to https", required=True)
     parser.add_argument("-o", "--output", help="The plce to direct output to. If left blank, script will output to stdout. \nOther options:\n\tmysql - save to a database (not implemented), \n\tfilename - create or append to a file", required=False)
-    parser.add_argument("-n", "--number", help="The number of links to follow for crawling.", required=True)
+    parser.add_argument("-n", "--number", help="The number of links to follow for crawling.", required=False)
     parser.add_argument("-H", "--mysql_host", help="If using mysql backend, the host that the database is on.", required=False)
     parser.add_argument("-U", "--mysql_user", help="If using mysql backend, the user to connect to the database as.", required=False)
     parser.add_argument("-P", "--mysql_pass", help="If using mysql backend, the password to connect with.", required=False)
