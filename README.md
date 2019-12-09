@@ -16,4 +16,20 @@
   <li>IP addresses</li>
   <li>Testing data</li>
 </ul>
-<p>Usage is really simple. </p>
+<p>Usage is really simple. Here are your options:</p>
+<ul>
+  <li>General</li>
+  <ul>
+    <li>-u, --url: The URL to parse and/or start spidering from.</li>
+    <li>-o, --output: Where to store output. If blank, output goes to STDOUT. If "mysql", output goes to the database specified in the other MySQL options below. If anything else, output goes to a file of that name.</li>
+    <li>-n, --number: The number of sites to "spider." The script will follow up to this many links if they're available. If not specified, defaults to 1.</li>
+  </ul>
+  <li>MySQL</li>
+  <ul>
+    <li>-H, --mysql_host: The database host.</li>  
+    <li>-U, --mysql_user: The user to connect to the database as.</li>
+    <li>-D, --mysql_db:   The database to connect to.</li>
+    <li>-P, --mysql_pass: The password for the user to connect as.</li>
+    <li>-p, --prompt_pass: Promt for the password to connect to the database with instead of providing on the command line</li>
+</ul>
+</ul>
