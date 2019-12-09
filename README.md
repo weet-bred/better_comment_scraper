@@ -35,7 +35,7 @@
 </ul>
 <h3>Example:</h3>
 <p>To store comments from a locally hosted web app to a locally hosted database with the username "username" and the database "comments":</p>
-<code>./comment_scraper.py -o mysql -n 10 -u http://127.0.0.1 -H "localhost" -U username p -D comments</code>
+<code>./comment_scraper.py -o mysql -n 10 -u http://127.0.0.1 -H "localhost" -U username -p -D comments</code>
 <br>
 <h3>Setup:</h3>
 <ul>
