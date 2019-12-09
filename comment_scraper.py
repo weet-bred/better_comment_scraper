@@ -207,6 +207,7 @@ def main():
     parser.add_argument("-H", "--mysql_host", help="If using mysql backend, the host that the database is on.", required=False)
     parser.add_argument("-U", "--mysql_user", help="If using mysql backend, the user to connect to the database as.", required=False)
     parser.add_argument("-P", "--mysql_pass", help="If using mysql backend, the password to connect with.", required=False)
+    parser.add_argument("-p", "--prompt_pass", help="If using mysql backend, the password to connect with, but prompted instead of on the command line.", required=False, action="store_true")
     parser.add_argument("-D", "--mysql_db", help="If using mysql backend, the database to connect to.", required=False)
 
     args = parser.parse_args()
@@ -216,6 +217,9 @@ def main():
 
     if not args.number:
         args.number = 1
+
+    if args.prompt_pass:
+        args.mysql_pass = input("MySQL Password: ")
 
 
     ###############
