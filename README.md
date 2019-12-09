@@ -50,8 +50,7 @@
     <li>Log in to the database: <code>sudo mysql</code></li>
     <li>Create a database user: <code>CREATE USER username IDENTIFIED BY password;</code></li>
     <li>Create a database to user: <code>CREATE DATABASE comments;</code></li>
-    <li>Give the user privileges: <code>GRANT ALL PRIVILEGES ON comments.* TO 'username'@'%';</li>
+    <li>Give the user privileges: <code>GRANT ALL PRIVILEGES ON comments.* TO 'username'@'%';</code></li>
     <li>Flush privileges: <code>FLUSH PRIVILEGES;</code></li>
-    
   </ul>
 </ul>
