@@ -1,4 +1,4 @@
-# better_comment_scraper
+# web_comment_scraper
 
 <h1>comment_scraper.py</h1>
 
