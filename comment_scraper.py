@@ -92,25 +92,49 @@ def write_output(comments, args, url):
     above and the configparser parsed arguments object.
     It either writes output to stdout
     """
+    import mysql.connector
     # Get the date for use in all the choices below
     now = datetime.now()
+    date = datetime.now()
     now = now.strftime("%H:%M:%S")
 
     # If the output isn't specified, write to stdout
     if not args.output:
-        print("Comments from run on " + str(now))
+        print("Comments from run on " + str(date) + ' ' + str(now))
         print("URL: " + url)
         for item in comments:
             print("Line number " + str(item[0]) + ": " + item[1])
+
+    # MYSQL - HECK YES
+    elif args.output == "mysql":
+
+        # Make a MYSQL connector object and connect to the DB
+        mydb = mysql.connector.connect(host=args.mysql_host, user=args.mysql_user, passwd=args.mysql_pass, database=args.mysql_db)
+        # Make a cursor object and get a list of the tables
+        mycursor = mydb.cursor()
+        mycursor.execute("SHOW TABLES;")
+
+        # Strip the URL appropriately to get the proper table name
+        stripped_url = args.url
+        stripped_url = stripped_url[stripped_url.find('/') +2:]
+        stripped_url = stripped_url.split('.')[0]
+        table_name = stripped_url
+
+        # Check if that table actually exists
+        found = False
+        for x in mycursor:
+            if str(x).find(table_name) != -1:
+                found = True
+
+        # Create the table if necessary
+        if not found:
+            mycursor.execute("CREATE TABLE {}(id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, url TEXT NOT NULL, line_no INT NOT NULL, date_found DATE NOT NULL, comment TEXT NOT NULL);".format(table_name))
+
+        # INSERT THE DATA
+        for line in comments:
+            mycursor.execute("INSERT INTO {} (url, line_no, date_found, comment) VALUES ({}, {}, {}, {});".format(table_name, url, line[0], date, line[1]))
 
     # If the output is specified and isn't mysql, write to a file
-    elif args.output == "mysql":
-        print("WARNING: MYSQL support not yet implemented - writing to STDOUT")
-        print("Comments from run on " + str(now))
-        print("URL: " + url)
-        for item in comments:
-            print("Line number " + str(item[0]) + ": " + item[1])
-
     else:
         # If the file exists, append to it
         if os.path.exists(args.output):
@@ -119,7 +143,8 @@ def write_output(comments, args, url):
         else:
             f = open(args.output, 'w')
         # Write the comments to the file
-        f.write("\n\nComments from run on " + str(now) + '\n')
+        f.write("Comments from run on " + str(date) + ' ' + str(now))
+        #f.write("\n\nComments from run on " + str(now) + '\n')
         f.write("URL: " + url + '\n\n')
         for item in comments:
             f.write("Line number " + str(item[0]) + ": " + item[1] + '\n')
@@ -164,9 +189,15 @@ def main():
     ###############
 
     parser = argparse.ArgumentParser()
+
     parser.add_argument("-u", "--url", help="The URL to parse. If no protocol is specified, defaults to https", required=True)
     parser.add_argument("-o", "--output", help="The plce to direct output to. If left blank, script will output to stdout. \nOther options:\n\tmysql - save to a database (not implemented), \n\tfilename - create or append to a file", required=False)
     parser.add_argument("-n", "--number", help="The number of links to follow for crawling.", required=True)
+    parser.add_argument("-H", "--mysql_host", help="If using mysql backend, the host that the database is on.", required=False)
+    parser.add_argument("-U", "--mysql_user", help="If using mysql backend, the user to connect to the database as.", required=False)
+    parser.add_argument("-P", "--mysql_pass", help="If using mysql backend, the password to connect with.", required=False)
+    parser.add_argument("-D", "--mysql_db", help="If using mysql backend, the database to connect to.", required=False)
+
     args = parser.parse_args()
     url = args.url
     iterations = 0
