@@ -33,4 +33,4 @@ u-msgpack-python==2.5.2
 urllib3==1.25.7
 Werkzeug==0.16.0
 wrapt==1.11.2
-WsgiDAV==3.0.1
+WsgiDAV==4.1.0
